@@ -3,14 +3,6 @@ package App::ANSIColorUtils;
 # DATE
 # VERSION
 
-use 5.010001;
-use strict;
-use warnings;
-
-our %SPEC;
-
-$SPEC{show_ansi_code}
-
 1;
 #ABSTRACT: Utilities related to ANSI color
 
