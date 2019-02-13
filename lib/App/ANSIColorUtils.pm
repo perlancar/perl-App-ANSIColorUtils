@@ -44,6 +44,45 @@ sub show_ansi_color_table {
     [200, "OK", \@rows];
 }
 
+$SPEC{show_assigned_rgb_colors} = {
+    v => 1.1,
+    summary => 'Take arguments, pass them through assign_rgb_color(), show the results',
+    description => <<'_',
+
+`assign_rgb_color()` from <pm:Color::RGB::Util> takes a string, produce SHA1
+digest from it, then take 24bit from the digest as the assigned color.
+
+_
+    args => {
+        strings => {
+            schema => ['array*', of=>'str*'],
+            req => 1,
+            pos => 0,
+            greedy => 1,
+        },
+    },
+};
+sub show_assigned_rgb_colors {
+    require Color::ANSI::Util;
+    require Color::RGB::Util;
+
+    my %args = @_;
+
+    my $strings = $args{strings};
+
+    my @rows;
+    for (0 .. $#{ $strings }) {
+        my $str = $strings->[$_];
+        my $rgb = Color::RGB::Util::assign_rgb_color($str);
+        push @rows, {
+            number => $_+1,
+            string => $str,
+            color  => sprintf("%s%s\e[0m", Color::ANSI::Util::ansifg($rgb), "'$str' is assigned color #$rgb"),
+        };
+    }
+    [200, "OK", \@rows, {"table.fields" => [qw/number color/]}];
+}
+
 1;
 #ABSTRACT: Utilities related to ANSI color
 
