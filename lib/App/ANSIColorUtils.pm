@@ -60,6 +60,13 @@ _
             pos => 0,
             greedy => 1,
         },
+        tone => {
+            schema => ['str*', in=>['light', 'dark']],
+            cmdline_aliases => {
+                light => {is_flag=>1, summary=>'Shortcut for --tone=light', code=>sub { $_[0]{tone} = 'light' }},
+                dark  => {is_flag=>1, summary=>'Shortcut for --tone=dark' , code=>sub { $_[0]{tone} = 'dark'  }},
+            },
+        },
     },
 };
 sub show_assigned_rgb_colors {
@@ -68,19 +75,24 @@ sub show_assigned_rgb_colors {
 
     my %args = @_;
 
+    my $tone = $args{tone} // '';
     my $strings = $args{strings};
 
     my @rows;
     for (0 .. $#{ $strings }) {
         my $str = $strings->[$_];
-        my $rgb = Color::RGB::Util::assign_rgb_color($str);
+        my $rgb =
+            $tone eq 'light' ? Color::RGB::Util::assign_rgb_light_color($str) :
+            $tone eq 'dark'  ? Color::RGB::Util::assign_rgb_dark_color($str) :
+            Color::RGB::Util::assign_rgb_color($str);
         push @rows, {
             number => $_+1,
             string => $str,
             color  => sprintf("%s%s\e[0m", Color::ANSI::Util::ansifg($rgb), "'$str' is assigned color #$rgb"),
+            "light?" => Color::RGB::Util::rgb_is_light($rgb),
         };
     }
-    [200, "OK", \@rows, {"table.fields" => [qw/number color/]}];
+    [200, "OK", \@rows, {"table.fields" => [qw/number string color light?/]}];
 }
 
 1;
