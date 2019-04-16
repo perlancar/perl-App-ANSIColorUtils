@@ -95,6 +95,53 @@ sub show_assigned_rgb_colors {
     [200, "OK", \@rows, {"table.fields" => [qw/number string color light?/]}];
 }
 
+$SPEC{show_text_using_gradation} = {
+    v => 1.1,
+    summary => 'Print text using gradation between two colors',
+    description => <<'_',
+
+This can be used to demonstrate 24bit color support in terminal emulators.
+
+_
+    args => {
+        text => {
+            schema => ['str*', min_len=>1],
+            req => 1,
+            pos => 0,
+        },
+        color1 => {
+            schema => 'color::rgb24*',
+            default => 'ffff00',
+        },
+        color2 => {
+            schema => 'color::rgb24*',
+            default => '0000ff',
+        },
+    },
+};
+sub show_text_using_gradation {
+    require Color::ANSI::Util;
+    require Color::RGB::Util;
+
+    my %args = @_;
+
+    my $color1 = $args{color1};
+    my $color2 = $args{color2};
+
+    chomp(my $text = $args{text});
+
+    my $len = length $text;
+    my $i = 0;
+    for my $c (split //, $text) {
+        $i++;
+        my $color = Color::RGB::Util::mix_2_rgb_colors($color1, $color2, $i/$len);
+        print Color::ANSI::Util::ansifg($color), $c;
+    }
+    print "\n\e[0m";
+
+    [200];
+}
+
 1;
 #ABSTRACT: Utilities related to ANSI color
 
