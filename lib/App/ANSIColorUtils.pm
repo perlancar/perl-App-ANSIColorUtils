@@ -124,7 +124,7 @@ _
     },
     examples => [
         {
-            args => {color=>'blue', color2=>'pink', text=>'Hello, world'},
+            args => {color1=>'blue', color2=>'pink', text=>'Hello, world'},
             test => 0,
             'x.doc_show_result'=>0,
         },
