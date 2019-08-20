@@ -1,3 +1,8 @@
+0.005   2019-08-20  Released-By: PERLANCAR; Urgency: medium
+
+	- Add utility: show-text-using-gradation.
+
+
 0.004   2019-02-13  Released-By: PERLANCAR
 
 	- show-assigned-rgb-colors: Add option --tone.

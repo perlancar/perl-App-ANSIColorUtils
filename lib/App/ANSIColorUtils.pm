@@ -115,17 +115,15 @@ _
         },
         color1 => {
             schema => 'color::rgb24*',
-            default => 'ffff00',
         },
         color2 => {
             schema => 'color::rgb24*',
-            default => '0000ff',
         },
     },
     examples => [
         {
             args => {color=>'blue', color2=>'pink', text=>'Hello, world'},
-            'x.text'=>0,
+            test => 0,
             'x.doc_show_result'=>0,
         },
     ],
@@ -137,8 +135,8 @@ sub show_text_using_color_gradation {
 
     my %args = @_;
 
-    my $color1 = $args{color1};
-    my $color2 = $args{color2};
+    my $color1 = $args{color1} // 'ffff00';
+    my $color2 = $args{color2} // '0000ff';
 
     my $text = $args{text};
     $text //= do {
