@@ -95,7 +95,7 @@ sub show_assigned_rgb_colors {
     [200, "OK", \@rows, {"table.fields" => [qw/number string color light?/]}];
 }
 
-$SPEC{show_text_using_gradation} = {
+$SPEC{show_text_using_color_gradation} = {
     v => 1.1,
     summary => 'Print text using gradation between two colors',
     description => <<'_',
@@ -106,8 +106,12 @@ _
     args => {
         text => {
             schema => ['str*', min_len=>1],
-            req => 1,
             pos => 0,
+            description => <<'_',
+
+If unspecified, will show a bar of '=' across the terminal.
+
+_
         },
         color1 => {
             schema => 'color::rgb24*',
@@ -118,18 +122,29 @@ _
             default => '0000ff',
         },
     },
+    examples => [
+        {
+            args => {color=>'blue', color2=>'pink', text=>'Hello, world'},
+            'x.text'=>0,
+            'x.doc_show_result'=>0,
+        },
+    ],
 };
-sub show_text_using_gradation {
+sub show_text_using_color_gradation {
     require Color::ANSI::Util;
     require Color::RGB::Util;
+    require Term::Size;
 
     my %args = @_;
 
     my $color1 = $args{color1};
     my $color2 = $args{color2};
 
-    chomp(my $text = $args{text});
-
+    my $text = $args{text};
+    $text //= do {
+        my $width = $ENV{COLUMNS} // (Term::Size::chars(*STDOUT{IO}))[0] // 80;
+        "X" x $width;
+    };
     my $len = length $text;
     my $i = 0;
     for my $c (split //, $text) {
