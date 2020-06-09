@@ -1,6 +1,8 @@
 package App::ANSIColorUtils;
 
+# AUTHORITY
 # DATE
+# DIST
 # VERSION
 
 use 5.010001;
@@ -39,6 +41,56 @@ sub show_ansi_color_table {
                 $_ < 8   ? sprintf("\e[%dm%s\e[0m", 30+$_, "This is ANSI color #$_") :
                 $_ < 16  ? sprintf("\e[1;%dm%s\e[0m", 30+$_-8, "This is ANSI color #$_") :
                            sprintf("\e[38;5;%dm%s\e[0m", $_, "This is ANSI color #$_"),
+        };
+    }
+    [200, "OK", \@rows];
+}
+
+$SPEC{show_colors} = {
+    v => 1.1,
+    summary => 'Show colors specified in argument as text with ANSI colors',
+    args => {
+        colors => {
+            'x.name.is_plural' => 1,
+            'x.name.singular' => 'color',
+            schema => ['array*', of=>'str*'],
+            req => 1,
+            pos => 0,
+            slurpy => 1,
+        },
+    },
+};
+sub show_colors {
+    require Color::ANSI::Util;
+    require Graphics::ColorNamesLite::All;
+    #require String::Escape; # ugly: \x1b...
+    require Data::Dmp;
+
+    my $codes = $Graphics::ColorNamesLite::All::NAMES_RGB_TABLE;
+
+    my %args = @_;
+
+    my @rows;
+    my $j = -1;
+    for my $name (@{ $args{colors} }) {
+        $j++;
+        my $code;
+        if ($name =~ /\A[0-9A-fa-f]{6}\z/) {
+            $code = $name;
+        } else {
+            $code = $codes->{$name}; defined $code or die "Unknown color name '$name'";
+        }
+        my $ansifg = Color::ANSI::Util::ansifg($code);
+        my $ansibg = Color::ANSI::Util::ansibg($code);
+        push @rows, {
+            name => $name,
+            rgb_code => $code,
+            ansi_fg_code => Data::Dmp::dmp($ansifg),
+            ansi_bg_code => Data::Dmp::dmp($ansibg),
+            fg =>
+                $ansifg . "This is text with foreground color $name (#$code)" . Color::ANSI::Util::ansi_reset(1) . "\n" .
+                $ansifg . "\e[1m" . "This is text with foreground color $name (#$code) + BOLD" . Color::ANSI::Util::ansi_reset(1) . "\n",
+            bg => $ansibg . Color::ANSI::Util::ansifg(Color::RGB::Util::rgb_is_light($code) ? "000000":"ffffff") . "This is text with background color $name (#$code)" . Color::ANSI::Util::ansi_reset(1),
         };
     }
     [200, "OK", \@rows];
